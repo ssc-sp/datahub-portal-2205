@@ -1,4 +1,5 @@
 @use '../../Common' as c;
+@use '../../Components/Card' as card;
 
 .featured-projects {
   display: grid;
@@ -14,15 +15,10 @@
     display: grid;
     grid-template-rows: auto auto 1fr auto;
     padding: 1rem 1.5rem;
-    border: 1px solid c.$grey-200;
-    border-radius: 4px;
-    background-color: c.$white;
+
+    @include card.default-card;
     
     transition: all 0.3s c.$cubic-bezier;
-    
-    &:hover {
-      @include c.BoxShadow(1);
-    }
     
     .sector {
       display: flex;

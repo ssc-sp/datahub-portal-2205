@@ -92,11 +92,10 @@ namespace Datahub.Core.Services
 
         public async Task<UserRecent> ReadRecentNavigations(string userId)
         {
-            using (var efCoreDatahubContext = _contextFactory.CreateDbContext())
-            {
-                var userRecentActions = await efCoreDatahubContext.UserRecent.FirstOrDefaultAsync(u => u.UserId == userId);
-                return userRecentActions;
-            }
+            await using var efCoreDatahubContext = await _contextFactory.CreateDbContextAsync();
+            var userRecentActions = await efCoreDatahubContext.UserRecent
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+            return userRecentActions;
         }
 
         public async Task RegisterNavigation(UserRecent recent)
