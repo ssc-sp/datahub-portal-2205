@@ -25,7 +25,9 @@ namespace Datahub.Core.Services
         private readonly IDbContextFactory<UserTrackingContext> contextFactory;
         private AuthenticationStateProvider _authenticationStateProvider;
         private NavigationManager _navigationManager;
+
         private IConfiguration _configuration;
+
         //private GraphServiceClient _graphServiceClient;
         public string imageHtml;
         private ClaimsPrincipal authenticatedUser;
@@ -39,16 +41,15 @@ namespace Datahub.Core.Services
             AuthenticationStateProvider authenticationStateProvider,
             NavigationManager navigationManager,
             IConfiguration configureOptions,
-            UserTrackingContext eFCoreDatahubContext,
             GraphServiceClient graphServiceClient,
             IDbContextFactory<UserTrackingContext> contextFactory
-            )
+        )
         {
             _logger = logger;
             _authenticationStateProvider = authenticationStateProvider;
             _navigationManager = navigationManager;
             _configuration = configureOptions;
-            
+
             this.graphServiceClient = graphServiceClient;
             this.contextFactory = contextFactory;
         }
@@ -58,7 +59,7 @@ namespace Datahub.Core.Services
         public async Task<string> GetUserIdString()
         {
             await CheckUser();
-            return getOID();
+            return GetOid();
         }
 
         public async Task<string> GetUserEmailDomain()
@@ -71,7 +72,7 @@ namespace Datahub.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Cannot parse email from {CurrentUser?.Mail}");
+                _logger.LogError(ex, "Cannot parse email from {CurrentUserMail}", CurrentUser?.Mail);
                 return "?";
             }
         }
@@ -81,15 +82,14 @@ namespace Datahub.Core.Services
             await CheckUser();
             try
             {
-                MailAddress email = new MailAddress(CurrentUser.Mail);
+                var email = new MailAddress(CurrentUser.Mail);
                 return email.User.ToLower();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Cannot parse email from {CurrentUser?.Mail}");
+                _logger.LogError(ex, "Cannot parse email from {CurrentUserMail}", CurrentUser?.Mail);
                 return "?";
             }
-
         }
 
         public async Task<string> GetUserRootFolder()
@@ -99,17 +99,14 @@ namespace Datahub.Core.Services
             return $"{domain}/{prefix}";
         }
 
-        private async Task<User> GetUserAsyncInternal()
+        private async Task GetUserAsyncInternal()
         {
-         if (CurrentUser != null)
-                 return CurrentUser;
+            if (CurrentUser != null) return;
             try
             {
-                if (authenticatedUser is null)
-                    authenticatedUser = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
-                var claimsList = authenticatedUser.Claims.ToList();
-                var email = authenticatedUser.Identity.Name;
-                string userId = getOID();
+                authenticatedUser ??= (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+                var email = authenticatedUser?.Identity?.Name;
+                var userId = GetOid();
                 if (email is null)
                 {
                     throw new InvalidOperationException("Cannot resolve user email");
@@ -117,12 +114,11 @@ namespace Datahub.Core.Services
 
                 PrepareAuthenticatedClient();
                 CurrentUser = await graphServiceClient.Users[userId].Request().GetAsync();
-
-                return CurrentUser;
             }
             catch (ServiceException e)
             {
-                if (e.InnerException is MsalUiRequiredException || e.InnerException is MicrosoftIdentityWebChallengeUserException)
+                if (e.InnerException is MsalUiRequiredException ||
+                    e.InnerException is MicrosoftIdentityWebChallengeUserException)
                     throw;
                 _logger.LogError(e, "Error Loading User");
                 throw new InvalidOperationException("Cannot retrieve user", e);
@@ -131,13 +127,13 @@ namespace Datahub.Core.Services
             {
                 _logger.LogError(e, "Error Loading User");
                 throw new InvalidOperationException("Cannot retrieve user list", e);
-
             }
         }
 
-        private string getOID()
+        private string GetOid()
         {
-            return authenticatedUser.Claims.First(c => c.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
+            return authenticatedUser.Claims
+                .First(c => c.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
         }
 
         public async Task<User> GetUserAsync()
@@ -221,10 +217,10 @@ namespace Datahub.Core.Services
             try
             {
                 IConfidentialClientApplication confidentialClientApplication = ConfidentialClientApplicationBuilder
-                                .Create(_configuration.GetSection("AzureAd").GetValue<string>("ClientId"))
-                                .WithTenantId(_configuration.GetSection("AzureAd").GetValue<string>("TenantId"))
-                                .WithClientSecret(_configuration.GetSection("AzureAd").GetValue<string>("ClientSecret"))
-                                .Build();
+                    .Create(_configuration.GetSection("AzureAd").GetValue<string>("ClientId"))
+                    .WithTenantId(_configuration.GetSection("AzureAd").GetValue<string>("TenantId"))
+                    .WithClientSecret(_configuration.GetSection("AzureAd").GetValue<string>("ClientSecret"))
+                    .Build();
                 ClientCredentialProvider authProvider = new ClientCredentialProvider(confidentialClientApplication);
                 graphServiceClient = new GraphServiceClient(authProvider);
             }
@@ -247,16 +243,18 @@ namespace Datahub.Core.Services
                 var userSetting = eFCoreDatahubContext.UserSettings.FirstOrDefault(u => u.UserId == userId);
                 if (userSetting == null)
                 {
-                    _logger.LogError($"User: {CurrentUser.DisplayName} with user id: {userId} is not in DB to register TAC.");
+                    _logger.LogError(
+                        $"User: {CurrentUser.DisplayName} with user id: {userId} is not in DB to register TAC.");
                     return false;
                 }
 
                 userSetting.UserName = CurrentUser.DisplayName;
                 userSetting.AcceptedDate = DateTime.UtcNow;
-                
+
                 if (await eFCoreDatahubContext.SaveChangesAsync() <= 0)
                 {
-                    _logger.LogInformation($"User: {CurrentUser.DisplayName} has accepted Terms and Conditions. Changes NOT saved");
+                    _logger.LogInformation(
+                        $"User: {CurrentUser.DisplayName} has accepted Terms and Conditions. Changes NOT saved");
                     return false;
                 }
 
@@ -264,7 +262,7 @@ namespace Datahub.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"User: {CurrentUser.DisplayName} registering TAC failed.");                
+                _logger.LogError(ex, $"User: {CurrentUser.DisplayName} registering TAC failed.");
             }
 
             return false;
@@ -273,31 +271,34 @@ namespace Datahub.Core.Services
         public async Task<bool> RegisterUserLanguage(string language)
         {
             var userId = await GetUserIdString();
-            _logger.LogInformation($"User: {CurrentUser.DisplayName} has selected language: {language}.");
+            _logger.LogInformation(
+                "User: {DisplayName} has selected language: {Language}", 
+                CurrentUser.DisplayName, language);
 
             try
             {
-                using var eFCoreDatahubContext = contextFactory.CreateDbContext();
+                await using var eFCoreDatahubContext = await contextFactory.CreateDbContextAsync();
                 var userSetting = eFCoreDatahubContext.UserSettings.FirstOrDefault(u => u.UserId == userId);
                 if (userSetting == null)
                 {
-                    userSetting = new UserTracking.UserSettings() { UserId = userId };
+                    userSetting = new UserTracking.UserSettings {UserId = userId};
                     eFCoreDatahubContext.UserSettings.Add(userSetting);
                 }
 
                 userSetting.UserName = CurrentUser.DisplayName;
                 userSetting.Language = language;
-                if (await eFCoreDatahubContext.SaveChangesAsync() <= 0)
-                {
-                    _logger.LogInformation($"User: {CurrentUser.DisplayName} has selected language: {language}. Changes NOT saved");
-                    return false;
-                }
+                if (await eFCoreDatahubContext.SaveChangesAsync() > 0) 
+                    return true;
+                
+                _logger.LogInformation(
+                    "User: {DisplayName} has selected language: {Language}. Changes NOT saved", 
+                    CurrentUser.DisplayName, language);
+                return false;
 
-                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"User: {CurrentUser.DisplayName} registering TAC failed.");                
+                _logger.LogError(ex, "User: {DisplayName} registering language failed", CurrentUser.DisplayName);
             }
 
             return false;
@@ -306,7 +307,7 @@ namespace Datahub.Core.Services
         public async Task<string> GetUserLanguage()
         {
             var userId = await GetUserIdString();
-            using var eFCoreDatahubContext = contextFactory.CreateDbContext();
+            await using var eFCoreDatahubContext = await contextFactory.CreateDbContextAsync();
             var userSetting = eFCoreDatahubContext.UserSettings.FirstOrDefault(u => u.UserId == userId);
             return userSetting != null ? userSetting.Language : string.Empty;
         }
@@ -315,7 +316,8 @@ namespace Datahub.Core.Services
         {
             if (!Thread.CurrentThread.CurrentCulture.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
             {
-                var uri = new Uri(_navigationManager.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var uri = new Uri(_navigationManager.Uri).GetComponents(UriComponents.PathAndQuery,
+                    UriFormat.Unescaped);
                 var query = $"?culture={Uri.EscapeDataString(language)}&" +
                             $"redirectionUri={Uri.EscapeDataString(uri)}";
                 _navigationManager.NavigateTo($"/Culture/SetCulture{query}", forceLoad: true);
@@ -336,10 +338,10 @@ namespace Datahub.Core.Services
         public async Task<bool> HasUserAcceptedTAC()
         {
             var userId = await GetUserIdString();
-            using var eFCoreDatahubContext = contextFactory.CreateDbContext();
+            await using var eFCoreDatahubContext = await contextFactory.CreateDbContextAsync();
             var userSetting = eFCoreDatahubContext.UserSettings.FirstOrDefault(u => u.UserId == userId);
 
-            return userSetting != null ? userSetting.AcceptedDate.HasValue : false;
+            return userSetting is {AcceptedDate: { }};
         }
 
         private async Task CheckUser()
@@ -366,7 +368,8 @@ namespace Datahub.Core.Services
             }
             catch (ServiceException e)
             {
-                if (e.InnerException is MsalUiRequiredException || e.InnerException is MicrosoftIdentityWebChallengeUserException)
+                if (e.InnerException is MsalUiRequiredException ||
+                    e.InnerException is MicrosoftIdentityWebChallengeUserException)
                     throw;
                 _logger.LogError(e, "Error Loading User");
                 return null;
@@ -377,5 +380,5 @@ namespace Datahub.Core.Services
                 return null;
             }
         }
-    }    
+    }
 }

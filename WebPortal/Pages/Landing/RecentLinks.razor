@@ -1,0 +1,58 @@
+@using Datahub.Core.Components.Skeleton
+
+@inject UserLocationManagerService _userLocationManagerService
+@inject IDbContextFactory<DatahubProjectDBContext> _dbContextFactory
+
+<div class="recent-card-container">
+    @if (_recentLinks is null)
+    {
+        @for (var i = 0; i < 6; i++)
+        {
+            <Skeleton Height="150px" Style="margin-top: -2rem;"/>
+        }
+    }
+    else
+    {
+        @foreach (var (link, project) in _recentLinks)
+        {
+            <DHLink UserRecentLink="@(link)">
+                <AeFlex class="@($"recent-card {GetIcon(link).Color}")">
+                    <i class="@GetIcon(link).Name"></i>
+                    <AeTypography class="title">@GetLinkDescription(link, project)</AeTypography>
+                    <AeTypography class="subtitle">@GetDescription(link, project)</AeTypography>
+                </AeFlex>
+            </DHLink>
+        }
+    }
+</div>
+
+@code {
+
+    [CascadingParameter(Name = "GraphUser")]
+    public Microsoft.Graph.User User { get; set; }
+
+    private List<(UserRecentLink, Datahub_Project)> _recentLinks;
+    private ushort _maxRecentLinks = 6;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var userRecent = await _userLocationManagerService.ReadRecentNavigations(User.Id);
+
+        _recentLinks = userRecent.UserRecentActions
+            .Where(l => l.DataProject != null && l.LinkType != DatahubLinkType.DataProject)
+            .OrderByDescending(l => l.accessedTime)
+            .DistinctBy(l => l.DataProject)
+            .Take(_maxRecentLinks)
+            .Select(l => (l, project:GetProject(dbContext, l)))
+            .ToList();
+    }
+
+    private Datahub_Project GetProject(DatahubProjectDBContext dbContext, UserRecentLink link)
+    {
+        return dbContext.Projects
+            .FirstOrDefault(p => p.Project_Acronym_CD == link.DataProject.Trim());
+    }
+
+}
+
