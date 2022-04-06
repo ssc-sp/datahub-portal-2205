@@ -15,7 +15,7 @@
     {
         @foreach (var (link, project) in _recentLinks)
         {
-            <DHLink UserRecentLink="@(link)">
+            <DHLink UserRecentLink="link">
                 <AeFlex class="@($"recent-card {GetIcon(link).Color}")">
                     <i class="@GetIcon(link).Name"></i>
                     <AeTypography class="title">@GetLinkDescription(link, project)</AeTypography>
@@ -41,7 +41,7 @@
 
         _recentLinks = userRecent.UserRecentActions
             .Where(l => l.DataProject != null && l.LinkType != DatahubLinkType.DataProject)
-            .OrderByDescending(l => l.accessedTime)
+            .OrderBy(l => l.accessedTime)
             .DistinctBy(l => l.DataProject)
             .Take(_maxRecentLinks)
             .Select(l => (l, project:GetProject(dbContext, l)))
