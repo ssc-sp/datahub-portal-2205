@@ -34,7 +34,7 @@
             {
                 <div class="project-row">
                     <AeTypography class="sector">
-                        <i class="@($"fad fa-{p.Project_Icon ?? "swatchbook"}")"></i>
+                        <i class="@($"fad fa-{p.Project_Icon ?? Icon.DEFAULT_PROJECT_ICON}")"></i>
                         @Localizer[p.Sector_Name ?? "N/A"]
                     </AeTypography>
                     <DHLink class="name" DataProject="@p.Project_Acronym_CD">

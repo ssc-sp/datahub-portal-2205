@@ -17,7 +17,7 @@
         {
             <DHLink UserRecentLink="link">
                 <AeFlex class="@($"recent-card {GetIcon(link).Color}")">
-                    <i class="@GetIcon(link).Name"></i>
+                    <i class="@GetIconName(link, project)"></i>
                     <AeTypography class="title">@GetLinkDescription(link, project)</AeTypography>
                     <AeTypography class="subtitle">@GetDescription(link, project)</AeTypography>
                 </AeFlex>
@@ -39,13 +39,12 @@
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var userRecent = await _userLocationManagerService.ReadRecentNavigations(User.Id);
 
-        _recentLinks = userRecent.UserRecentActions
-            .Where(l => l.DataProject != null && l.LinkType != DatahubLinkType.DataProject)
-            .OrderBy(l => l.accessedTime)
-            .DistinctBy(l => l.DataProject)
+        _recentLinks = userRecent?.UserRecentActions?
+            .Where(l => l.DataProject != null)
+            .OrderByDescending(l => l.accessedTime)
             .Take(_maxRecentLinks)
             .Select(l => (l, project:GetProject(dbContext, l)))
-            .ToList();
+            .ToList() ?? new List<(UserRecentLink l, Datahub_Project project)>();
     }
 
     private Datahub_Project GetProject(DatahubProjectDBContext dbContext, UserRecentLink link)

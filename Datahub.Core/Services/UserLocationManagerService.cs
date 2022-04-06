@@ -26,9 +26,9 @@ namespace Datahub.Core.Services
             _userInformationService = userInformationService;
             _userTrackingContextFactory = userTrackingContextFactory;
         }
-        
-        
-        public const ushort MaxLocationHistory = 6;
+
+
+        private const ushort MaxLocationHistory = 6;
 
         public async Task RegisterNavigation(UserRecentLink link, bool isNew)
         {
@@ -39,18 +39,17 @@ namespace Datahub.Core.Services
 
                 await using var efCoreDatahubContext = await _userTrackingContextFactory.CreateDbContextAsync();
 
-                var userRecent = await efCoreDatahubContext.UserRecent
+                var existingEntity = await efCoreDatahubContext.UserRecent
                     .FirstOrDefaultAsync(u => u.UserId == userId);
                 
-                if (userRecent == null)
+                if (existingEntity != null)
                 {
-                    userRecent = new UserRecent { UserId = userId };
-                    efCoreDatahubContext.UserRecent.Add(userRecent);
+                    efCoreDatahubContext.UserRecent.Remove(existingEntity);
+                    await efCoreDatahubContext.SaveChangesAsync();
                 }
-
-                userRecent.UserRecentActions.Add(link);
-                
-                TrimExcessNavigations(userRecent);
+                var links = GetRecentLinks(existingEntity, link);
+                var newUserRecent = new UserRecent { UserId = userId, UserRecentActions = links};
+                efCoreDatahubContext.UserRecent.Add(newUserRecent);
                 
                 await efCoreDatahubContext.SaveChangesAsync();
             }
@@ -60,25 +59,18 @@ namespace Datahub.Core.Services
             }
         }
 
-        private void TrimExcessNavigations(UserRecent userRecent)
+        private static ICollection<UserRecentLink> GetRecentLinks(UserRecent userRecent, UserRecentLink link)
         {
             if (userRecent == null)
-                return;
+                return new List<UserRecentLink>(){ link };
 
-            var excessNavigations = userRecent.UserRecentActions
-                .OrderBy(x => x.accessedTime)
-                .Skip(MaxLocationHistory)
+            userRecent.UserRecentActions.Add(link);
+            
+            return userRecent.UserRecentActions
+                .OrderByDescending(x => x.accessedTime)
+                .DistinctBy(x => (x.DataProject, x.LinkType))
+                .Take(MaxLocationHistory)
                 .ToList();
-            
-            _logger.LogInformation("Found {Count} excess navigations", excessNavigations.Count);
-
-            foreach (var recentLink in excessNavigations)
-            {
-                userRecent.UserRecentActions.Remove(recentLink);
-            }
-            
-            _logger.LogInformation("UserRecent now has {Count} recent navigations", userRecent.UserRecentActions.Count);
-
         }
 
         public async Task DeleteUserRecent(string userId)

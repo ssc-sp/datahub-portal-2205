@@ -25,6 +25,13 @@ public partial class RecentLinks
         };
     }
     
+    private static string GetIconName(UserRecentLink link, Datahub_Project project)
+    {
+        return link.LinkType == DatahubLinkType.DataProject 
+            ? $"fad fa-{project?.Project_Icon ?? Icon.DEFAULT_PROJECT_ICON}" 
+            : GetIcon(link).Name;
+    }
+    
     private static Icon GetIcon(UserRecentLink link)
     {
         return link.LinkType switch
@@ -48,7 +55,7 @@ public partial class RecentLinks
             DatahubLinkType.PowerBI => $"{projectName} >> {Localizer["Power BI"]}",
             DatahubLinkType.Databricks => $"{projectName} >> {Localizer["Databricks"]}",
             DatahubLinkType.WebForm => $"{projectName} >> {Localizer["Data Entry"]}",
-            DatahubLinkType.DataProject => $"{projectName} >> {Localizer["Home"]}",
+            DatahubLinkType.DataProject => $"{projectName} >> {Localizer["Project Home"]}",
             DatahubLinkType.Storage => $"{projectName} >> {Localizer["Storage"]}",
             DatahubLinkType.FormBuilder => $"{projectName} >> {Localizer["Form Builder"]}",
             DatahubLinkType.DataSharingDashboard => $"{projectName} >> Data Sharing Dashboard",
