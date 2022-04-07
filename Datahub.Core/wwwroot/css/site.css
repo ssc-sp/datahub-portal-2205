@@ -5484,16 +5484,33 @@ code {
   top: 60px;
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-selection-icon {
-  font-size: 1rem;
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  width: 100%;
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .unchecked,
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .suggest,
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .checked {
   display: none;
+  position: absolute;
+  font-size: 1rem;
 }
-.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover .file-selection-icon .unchecked {
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight {
+  background-color: red;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight .checked {
+  display: inline-block;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon .unchecked {
+  display: inline-block;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon:hover .unchecked {
+  display: none;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon:hover .suggest {
   display: inline-block;
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-item-name {
