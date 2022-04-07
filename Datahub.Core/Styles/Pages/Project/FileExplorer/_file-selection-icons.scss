@@ -1,0 +1,18 @@
+
+
+@mixin sharepoint-style {
+  
+  .unchecked,
+  .suggest,
+  .checked {
+    display: none;
+  }
+  
+  &:hover {
+    .file-selection-icon {
+      .unchecked {
+        display: inline-block;
+      }
+    }
+  }
+}

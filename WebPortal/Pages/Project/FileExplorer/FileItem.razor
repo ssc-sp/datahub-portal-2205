@@ -10,6 +10,11 @@
     class="file-item @(Highlighted ? "highlight" : "")"
     @onclick="OnClick"
     @ondblclick="OnDblClick">
+    <span class="file-selection-icon @(Highlighted ? "selected" : "")">
+        <i class="far fa-circle unchecked"></i>
+        <i class="far fa-circle-circle suggest"></i>
+        <i class="fas fa-check-circle checked"></i>
+    </span>
     <AeTypography class="file-item-name">
         <span class="file-item-icon">
             @if (Icon != null)
