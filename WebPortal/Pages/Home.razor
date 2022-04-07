@@ -16,15 +16,7 @@
 <WelcomeBanner/>
 <CascadingValue Name="GraphUser" Value="_user">
     <RecentLinks/>
-
-    @if (!_isLoaded)
-    {
-        <Spinner/>
-    }
-    else
-    {
-        <LandingContent TabIndex="TabIndexParsed"/>
-    }
+    <LandingContent TabIndex="TabIndexParsed"/>
 </CascadingValue>
 
 @code
@@ -34,7 +26,6 @@
 
     private int TabIndexParsed => int.TryParse(TabIndex, out var tabIndex) ? tabIndex : 0;
     private bool _isUserValid = true;
-    private bool _isLoaded;
 
     private readonly List<string> _languages = new() {"English", "Français"};
     private User _user;
@@ -43,23 +34,16 @@
     {
         await base.OnInitializedAsync();
         _user = await _userInformationService.GetUserAsync();
-    }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        _isUserValid = await _userInformationService.HasUserAcceptedTAC();
+        if (_isUserValid)
         {
-            _isUserValid = await _userInformationService.HasUserAcceptedTAC();
-            if (_isUserValid)
-            {
-                await SetupRootFolder();
-                await AdjustLanguage();
-            }
-            else
-            {
-                await InvalidUser();
-            }
-            StateHasChanged();
+            await SetupRootFolder();
+            await AdjustLanguage();
+        }
+        else
+        {
+            await InvalidUser();
         }
     }
 
@@ -81,8 +65,6 @@
 
     private async Task SetupRootFolder()
     {
-        _isLoaded = false;
-
     // We need to load user and check they have root folder
         var rootFolder = await _userInformationService.GetUserRootFolder();
 
@@ -92,8 +74,6 @@
         _myDataService.MyDataFolder.id = rootFolder;
         _myDataService.SharedDataFolder.id = rootFolder;
         _myDataService.SearchDataFolder.id = rootFolder;
-
-        _isLoaded = true;
     }
 
     private async void HandleAlertDecision(bool isContinue)
