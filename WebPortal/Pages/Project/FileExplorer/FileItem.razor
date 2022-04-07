@@ -10,11 +10,18 @@
     class="file-item @(Highlighted ? "highlight" : "")"
     @onclick="OnClick"
     @ondblclick="OnDblClick">
-    <span class="file-selection-icon @(Highlighted ? "selected" : "")">
-        <i class="far fa-circle unchecked"></i>
-        <i class="far fa-circle-circle suggest"></i>
-        <i class="fas fa-check-circle checked"></i>
-    </span>
+    @if (Folder)
+    {
+        <span></span>
+    }
+    else
+    {
+        <span class="file-selection-icon" @onclick="OnSelectionClick">
+            <i class="far fa-circle unchecked"></i>
+            <i class="far fa-check-circle suggest"></i>
+            <i class="fas fa-check-circle checked"></i>
+        </span>
+    }
     <AeTypography class="file-item-name">
         <span class="file-item-icon">
             @if (Icon != null)
@@ -60,6 +67,9 @@
 
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
+    
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnSelectionClick { get; set; }
 
     [Parameter]
     public EventCallback<MouseEventArgs> OnDblClick { get; set; }
@@ -80,5 +90,4 @@
             await _module.InvokeAsync<IJSObjectReference>("initializeDraggable", _fileItemElement);
         }
     }
-
 }
