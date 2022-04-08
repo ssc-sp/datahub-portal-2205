@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an idea for improving or enhancing the DataHub
 title: ''
 labels: ''
 assignees: ''
