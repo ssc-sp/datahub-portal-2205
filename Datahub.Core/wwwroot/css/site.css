@@ -5467,12 +5467,13 @@ code {
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-list-header,
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item {
   display: grid;
-  grid-template-columns: 1fr 150px 250px 40px;
+  grid-template-columns: 36px 1fr 150px 250px 36px;
+  gap: calc((0 + 1 * (var(--design-unit) * var(--density))) * 1px);
   align-items: center;
-  padding: calc((0 + 2 * (var(--design-unit) * var(--density))) * 1px);
+  padding: calc((0 + 1 * (var(--design-unit) * var(--density))) * 1px);
 }
-.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-list-header i,
-.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item i {
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-list-header .file-item-name i,
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-item-name i {
   font-size: 1rem;
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-list-header {
@@ -5482,14 +5483,43 @@ code {
   position: sticky;
   top: 60px;
 }
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-selection-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .unchecked,
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .suggest,
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .checked {
+  display: none;
+  position: absolute;
+  font-size: 1rem;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight {
+  background-color: red;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight .checked {
+  display: inline-block;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon .unchecked {
+  display: inline-block;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon:hover .unchecked {
+  display: none;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover:not(.highlight) .file-selection-icon:hover .suggest {
+  display: inline-block;
+}
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-item-name {
   display: flex;
   align-items: center;
   gap: calc((0 + 1 * (var(--design-unit) * var(--density))) * 1px);
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item .file-item-name .file-item-icon {
-  width: 30px;
-  min-width: 30px;
+  width: 20px;
   height: 30px;
   display: flex;
   align-items: center;
@@ -5500,8 +5530,14 @@ code {
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:not(:last-of-type), .dropzone-container + .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item {
   border-bottom: 1px solid var(--bg-color-accent);
 }
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item:hover {
+  background-color: #f1f5f9;
+}
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight {
   background-color: #e2e8f0;
+}
+.file-explorer-layout-wrapper .file-explorer-layout .file-list .file-item.highlight:hover {
+  background-color: #cbd5e1;
 }
 .file-explorer-layout-wrapper .file-explorer-layout .file-list .dropzone-container:not(:last-of-type) .file-item {
   border-bottom: 1px solid var(--bg-color-accent);
