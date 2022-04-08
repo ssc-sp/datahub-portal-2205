@@ -16,7 +16,7 @@
     }
     else
     {
-        <span class="file-selection-icon" @onclick="OnSelectionClick">
+        <span class="file-selection-icon" @onclick="OnSelectionClick" @onclick:stopPropagation="true">
             <i class="far fa-circle unchecked"></i>
             <i class="far fa-check-circle suggest"></i>
             <i class="fas fa-check-circle checked"></i>

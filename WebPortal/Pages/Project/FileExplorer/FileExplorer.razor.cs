@@ -26,6 +26,7 @@ public partial class FileExplorer
         _loading = false;
         StateHasChanged();
     }
+
     
     private void HandleNewFolder(string newFolderName)
     {
@@ -47,8 +48,9 @@ public partial class FileExplorer
         {
             _files?.RemoveAll(f => f.name.Equals(filename, StringComparison.OrdinalIgnoreCase));
         }
-        _selectedItem = _currentFolder;
-        
+
+        _selectedItems = new HashSet<string> {_currentFolder};
+
     }
 
     private async Task HandleFileItemDrop(string folder, string filename)
@@ -168,7 +170,7 @@ public partial class FileExplorer
     private async Task SetCurrentFolder(string folderName)
     {
         _currentFolder = folderName;
-        _selectedItem = folderName;
+        _selectedItems = new HashSet<string> { folderName };
         await FetchStorageBlobsPageAsync();
     }
 
@@ -194,5 +196,18 @@ public partial class FileExplorer
     private void ResetSearch()
     {
         _filterValue = string.Empty;
+    }
+    
+    
+    private void HandleFileSelectionClick(string filename)
+    {
+        if (_selectedItems.Contains(filename))
+        {
+            _selectedItems.Remove(filename);
+        }
+        else
+        {
+            _selectedItems.Add(filename);
+        }
     }
 }
