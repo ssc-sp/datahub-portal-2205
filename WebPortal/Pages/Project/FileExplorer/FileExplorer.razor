@@ -12,7 +12,7 @@
 <div class="file-explorer-layout">
     <Heading
         CurrentFolder="@_currentFolder"
-        SelectedItem="@_selectedItem"
+        SelectedItems="@_selectedItems"
         Files="@_files"
         Folders="@_folders"
         OnNewFolder="HandleNewFolder"
@@ -54,9 +54,9 @@
                             OnFileItemDrop="async filename => await HandleFileItemDrop(parentFolder, filename)">
                             <FileItem
                                 Name="[..]"
-                                Highlighted="_selectedItem == parentFolder"
+                                Highlighted="_selectedItem.Contains(parentFolder)"
                                 Folder
-                                @onclick="() => _selectedItem = parentFolder"
+                                @onclick="@(() => _selectedItems = new HashSet<string> { parentFolder })"
                                 @ondblclick="async () => await SetCurrentFolder(parentFolder)">
                                 <Icon>
                                     <i class="fas fa-folder"></i>
@@ -73,9 +73,9 @@
                             OnFileItemDrop="async filename => await HandleFileItemDrop(folderName, filename)">
                             <FileItem
                                 Name="@GetFileName(folderName)"
-                                Highlighted="_selectedItem == folderName"
+                                Highlighted="_selectedItems.Contains(folderName)"
                                 Folder
-                                @onclick="() => _selectedItem = folderName"
+                                @onclick="@(() => _selectedItems = new HashSet<string> { folderName })"
                                 @ondblclick="async () => await SetCurrentFolder(folderName)">
                                 <Icon>
                                     <i class="fas fa-folder"></i>
@@ -91,8 +91,9 @@
                             Name="@GetFileName(file.name)"
                             Modified="@file.Modified"
                             Size="@file.filesize"
-                            @onclick="() => _selectedItem = file.name"
-                            Highlighted="_selectedItem == file.name">
+                            @onclick="@(() => _selectedItems = new HashSet<string> {file.name})"
+                            OnSelectionClick="() => HandleFileSelectionClick(file.name)"
+                            Highlighted="_selectedItems.Contains(file.name)">
                             <Icon>
                                 <i class="@DatahubTools.GetFileTypeIcon(file.fileformat)"></i>
                             </Icon>
@@ -140,7 +141,9 @@
 
     private readonly string _root = "/";
     private string _currentFolder = "/";
-    private string _selectedItem = "/";
+    private string _selectedItem => _selectedItems.FirstOrDefault("/");
+
+    private HashSet<string> _selectedItems = new() {"/"};
 
     private List<string> _folders = new();
     private List<FileMetaData> _files = new();
