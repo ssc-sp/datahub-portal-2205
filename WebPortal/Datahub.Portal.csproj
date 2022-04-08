@@ -115,5 +115,14 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="Pages\Landing\LandingContent.razor" />
+    <AdditionalFiles Include="Pages\Landing\Tabs\DatabricksTab.razor" />
+    <AdditionalFiles Include="Pages\Landing\Tabs\DataEntryTab.razor" />
+    <AdditionalFiles Include="Pages\Landing\Tabs\PowerBITab.razor" />
+    <AdditionalFiles Include="Pages\Landing\Tabs\ProjectsTab.razor" />
+    <AdditionalFiles Include="Pages\Landing\Tabs\RecentTab.razor" />
+    <AdditionalFiles Include="Pages\Landing\WelcomeBanner.razor" />
+  </ItemGroup>
 
 </Project>
