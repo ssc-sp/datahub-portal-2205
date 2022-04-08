@@ -23,14 +23,15 @@ public partial class Heading
 
     private void HandleShare()
     {
-        if (_selectedFile is null)
+        var selectedFile = _selectedFiles.FirstOrDefault();
+        if (selectedFile is null)
             return;
 
         var sb = new System.Text.StringBuilder();
         sb.Append("/sharingworkflow/");
-        sb.Append(_selectedFile.fileid);
+        sb.Append(selectedFile.fileid);
         sb.Append("?filename=");
-        sb.Append(_selectedFile.filename);
+        sb.Append(selectedFile.filename);
         if (!string.IsNullOrWhiteSpace(ProjectAcronym))
         {
             sb.Append("&project=");
@@ -39,7 +40,7 @@ public partial class Heading
         else
         {
             sb.Append("&folderpath=");
-            sb.Append(_selectedFile.folderpath);
+            sb.Append(selectedFile.folderpath);
         }
 
         _navigationManager.NavigateTo(sb.ToString());
@@ -47,18 +48,25 @@ public partial class Heading
 
     private async Task HandleDelete()
     {
-        if (_selectedFile is not null && _ownsSelectedFile)
+        if (!_ownsSelectedFiles)
+            return;
+        
+        var deletes = SelectedItems
+            .Where(selectedItem => Files?.Any(f => f.name == selectedItem) ?? false);
+
+        foreach (var delete in deletes)
         {
-            await OnFileDelete.InvokeAsync(_selectedFile.name);
+            await OnFileDelete.InvokeAsync(delete);
         }
     }
 
     private async Task HandleRename()
     {
-        if (_selectedFile is not null && _ownsSelectedFile)
+        var selectedFile = _selectedFiles.FirstOrDefault();
+        if (selectedFile is not null && _ownsSelectedFiles)
         {
             var newName = await _jsRuntime.InvokeAsync<string>("prompt", "Enter new name", 
-                FileExplorer.GetFileName(_selectedFile.filename));
+                FileExplorer.GetFileName(selectedFile.filename));
             newName = newName?.Replace("/", "").Trim();
 
             await OnFileRename.InvokeAsync(newName);
@@ -86,10 +94,10 @@ public partial class Heading
     {
         return buttonAction switch
         {
-            ButtonAction.Download => _selectedFile is null || !_ownsSelectedFile,
-            ButtonAction.Share => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
-            ButtonAction.Delete => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
-            ButtonAction.Rename => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
+            ButtonAction.Download => _selectedFiles is null || !_selectedFiles.Any() || !_ownsSelectedFiles,
+            ButtonAction.Share    => _selectedFiles is null || !_selectedFiles.Any() || !_ownsSelectedFiles || SelectedItems.Count > 1,
+            ButtonAction.Delete   => _selectedFiles is null || !_selectedFiles.Any() || !_ownsSelectedFiles,
+            ButtonAction.Rename   => _selectedFiles is null || !_selectedFiles.Any() || !_ownsSelectedFiles || SelectedItems.Count > 1,
             _ => false
         };
     }

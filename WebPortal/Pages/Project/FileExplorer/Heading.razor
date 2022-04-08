@@ -86,8 +86,8 @@
 
     private IJSObjectReference _module;
 
-    private FileMetaData _selectedFile;
-    private bool _ownsSelectedFile;
+    private List<FileMetaData> _selectedFiles;
+    private bool _ownsSelectedFiles;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -102,16 +102,20 @@
 
     protected override void OnParametersSet()
     {
-        _selectedFile = Files?.FirstOrDefault(f => f.name == SelectedItems.FirstOrDefault());
+        _selectedFiles = Files?
+            .Where(f => SelectedItems.Contains(f.name))
+            .ToList();
 
     // TODO: This is a hack until SSC properly sets the owner of a file
         if (Environment.GetEnvironmentVariable("HostingProfile") == "ssc")
         {
-            _ownsSelectedFile = _selectedFile != null;
+            _ownsSelectedFiles = _selectedFiles != null;
         }
         else
         {
-            _ownsSelectedFile = _selectedFile?.ownedby.Equals(GraphUser.Id, StringComparison.InvariantCulture) == true;
+            _ownsSelectedFiles = _selectedFiles?
+                .TrueForAll(file => file?.ownedby?.Equals(GraphUser.Id, StringComparison.InvariantCulture) ?? false)
+                .Equals(true) ?? false;
         }
     }
 
