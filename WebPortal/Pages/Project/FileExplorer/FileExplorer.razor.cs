@@ -202,6 +202,8 @@ public partial class FileExplorer
     
     private void HandleFileSelectionClick(string filename)
     {
+        _selectedItems.RemoveWhere(i => i.EndsWith("/", StringComparison.InvariantCulture));
+        
         if (_selectedItems.Contains(filename))
         {
             _selectedItems.Remove(filename);

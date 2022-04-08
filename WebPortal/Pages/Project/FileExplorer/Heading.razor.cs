@@ -13,10 +13,12 @@ public partial class Heading
     private async Task HandleDownload()
     {
         var downloads = SelectedItems
-            .Where(selectedItem => Files?.Any(f => f.name == selectedItem) ?? false)
-            .Select(selectedItem => OnFileDownload.InvokeAsync(selectedItem));
+            .Where(selectedItem => Files?.Any(f => f.name == selectedItem) ?? false);
 
-        await Task.WhenAll(downloads);
+        foreach (var download in downloads)
+        {
+            await OnFileDownload.InvokeAsync(download);
+        }
     }
 
     private void HandleShare()
