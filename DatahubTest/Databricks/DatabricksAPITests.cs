@@ -7,7 +7,9 @@ using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,17 +39,16 @@ namespace Datahub.Tests.Databricks
 
             var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ExcludeInteractiveBrowserCredential = false, ExcludeVisualStudioCodeCredential = true  });
             var token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext(new[] { DATABRICKS_INSTANCE }));
-
-            var serviceCredentials = new TokenCredentials(token.Token, "Bearer");
+            int timeoutSeconds = 30;
             using var httpClient = new HttpClient(new HttpClientHandler
             {
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             }, disposeHandler: false)
             {
-                BaseAddress = baseAddress,
+                BaseAddress = new Uri(DATABRICKS_INSTANCE),
                 Timeout = TimeSpan.FromSeconds(timeoutSeconds)
             };
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             //Assert.True(allDataSets.Count(d => d.EndorsementDetails != null) > 0);
