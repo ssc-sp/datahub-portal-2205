@@ -54,7 +54,6 @@
                             OnFileItemDrop="async filename => await HandleFileItemDrop(parentFolder, filename)">
                             <FileItem
                                 Name="[..]"
-                                Highlighted="_selectedItem.Contains(parentFolder)"
                                 Folder
                                 @onclick="@(() => _selectedItems = new HashSet<string> { parentFolder })"
                                 @ondblclick="async () => await SetCurrentFolder(parentFolder)">
