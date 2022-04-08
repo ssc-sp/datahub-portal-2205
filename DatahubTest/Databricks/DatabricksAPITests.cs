@@ -36,15 +36,22 @@ namespace Datahub.Tests.Databricks
             handler.UseDefaultCredentials = true;
 
             var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { ExcludeInteractiveBrowserCredential = false, ExcludeVisualStudioCodeCredential = true  });
-            var token = await credential.GetTokenAsync(
-                new Azure.Core.TokenRequestContext(
-                    new[] { DATABRICKS_INSTANCE })
-                );
+            var token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext(new[] { DATABRICKS_INSTANCE }));
 
             var serviceCredentials = new TokenCredentials(token.Token, "Bearer");
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = 
+            using var httpClient = new HttpClient(new HttpClientHandler
+            {
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
+            }, disposeHandler: false)
+            {
+                BaseAddress = baseAddress,
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
+            };
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             //Assert.True(allDataSets.Count(d => d.EndorsementDetails != null) > 0);
+            var userData = await httpClient.GetStringAsync(USERS_API);
         }
     }
 }
