@@ -93,8 +93,11 @@
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import",
-            "./Pages/Project/FileExplorer/Heading.razor.js");
+        if (firstRender)
+        {
+            _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./Pages/Project/FileExplorer/Heading.razor.js");
+        }
     }
 
     protected override void OnParametersSet()

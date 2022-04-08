@@ -12,10 +12,11 @@ public partial class Heading
 
     private async Task HandleDownload()
     {
-        if (_selectedFile is not null)
-        {
-            await OnFileDownload.InvokeAsync(_selectedFile.name);
-        }
+        var downloads = SelectedItems
+            .Where(selectedItem => Files?.Any(f => f.name == selectedItem) ?? false)
+            .Select(selectedItem => OnFileDownload.InvokeAsync(selectedItem));
+
+        await Task.WhenAll(downloads);
     }
 
     private void HandleShare()
@@ -83,7 +84,7 @@ public partial class Heading
     {
         return buttonAction switch
         {
-            ButtonAction.Download => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
+            ButtonAction.Download => _selectedFile is null || !_ownsSelectedFile,
             ButtonAction.Share => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
             ButtonAction.Delete => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
             ButtonAction.Rename => _selectedFile is null || !_ownsSelectedFile || SelectedItems.Count > 1,
