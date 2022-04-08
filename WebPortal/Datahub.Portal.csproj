@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="package.json" />
+    <Content Include="Pages\Project\FileExplorer\Heading.razor.js" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Controllers\OpenDataApprovalForm.docx" />

@@ -145,7 +145,8 @@ public partial class FileExplorer
     {   
         var selectedFile = _files?.FirstOrDefault(f => f.name == filename);
         var uri = await _dataRetrievalService.DownloadFile(ContainerName, selectedFile, ProjectAcronym);
-        await _jsRuntime.InvokeVoidAsync("open", uri.ToString(), "_blank");
+        
+        await _module.InvokeVoidAsync("downloadFile", uri.ToString());
     }
     
     
