@@ -133,7 +133,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _renderFunctions = new()
+        _renderFunctions = new List<Func<Datahub_Project_Access_Request, RenderFragment>>
         {
             null,
             p => @<div>@(p.User_Name ?? Localizer["N/A"])</div>,
