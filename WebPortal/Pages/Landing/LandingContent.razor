@@ -8,6 +8,7 @@
 @inject NavigationManager NavigationManager
 @inject IOptions<DataProjectsConfiguration> DataProjectsConfiguration
 
+<AeTypography Variant="h4" style="margin-top: 2.5rem">My Places</AeTypography>
 <AeFlex class="landing-content-wrapper">
     <AeFlex class="landing-content">
         <TabControl TabIndex="@TabIndex" OnChangeTab="@OnChangeTab">
@@ -40,15 +41,15 @@
     {
         var res = new List<(string, RenderFragment)>
         {
-            (Localizer["My Projects"], @<ProjectsTab/>)
+            (Localizer["Projects"], @<ProjectsTab/>)
         };
 
         if (DataProjectsConfiguration.Value.Databricks)
-            res.Add((Localizer["My Databricks Workbooks"], @<DatabricksTab/>));
+            res.Add((Localizer["Databricks Workbooks"], @<DatabricksTab/>));
         if (DataProjectsConfiguration.Value.PowerBI)
-            res.Add((Localizer["My Power BI Reports"], @<PowerBITab/>));
+            res.Add((Localizer["Power BI Reports"], @<PowerBITab/>));
         if (DataProjectsConfiguration.Value.WebForms)
-            res.Add((Localizer["My Data Entry"], @<DataEntryTab/>));
+            res.Add((Localizer["Data Entry"], @<DataEntryTab/>));
 
         return res;
     }
