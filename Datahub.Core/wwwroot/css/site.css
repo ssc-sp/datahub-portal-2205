@@ -5022,7 +5022,7 @@ code {
 .tab-control .tab-selection {
   display: flex;
   flex-wrap: wrap;
-  margin: 1rem 0;
+  margin: 0 0 1rem;
 }
 .tab-control .tab-selection .tab {
   padding: 0.5rem 1rem;
@@ -5039,10 +5039,6 @@ code {
 .tab-control .tab-selection .tab.force-gap-left {
   margin-left: auto;
 }
-.landing-content-wrapper .landing-content {
-  margin: 1.5rem 0;
-}
-
 .recent-card-container {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
