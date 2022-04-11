@@ -10,21 +10,27 @@
 
 <AuthorizeView Roles="@string.Join(',', _authorizedRoles)">
     <Authorized>
-        <div class="file-explorer-layout-wrapper">
-            <TabControl TabIndex="@_tabIndex" OnChangeTab="@OnChangeTab">
-                @foreach (var (control, content) in GetTabs())
-                {
-                    <TabPage>
-                        <Control>
-                            <AeTypography>@control</AeTypography>
-                        </Control>
-                        <ChildContent>
-                            @content
-                        </ChildContent>
-                    </TabPage>
-                }
-            </TabControl>
-        </div>
+        <CascadingValue Value="CurrentUserId" Name="UserId">
+            <CascadingValue Value="IsDataHubAdmin" Name="IsDatahubAdmin">
+                <CascadingValue Value="CurrentUserEmail" Name="CurrentUserEmail">
+                    <div class="file-explorer-layout-wrapper">
+                        <TabControl TabIndex="@_tabIndex" OnChangeTab="@OnChangeTab">
+                            @foreach (var (control, content) in GetTabs())
+                            {
+                                <TabPage>
+                                    <Control>
+                                        <AeTypography>@control</AeTypography>
+                                    </Control>
+                                    <ChildContent>
+                                        @content
+                                    </ChildContent>
+                                </TabPage>
+                            }
+                        </TabControl>
+                    </div>
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
     </Authorized>
     <NotAuthorized>
         <AeTypography Variant="h1">@Localizer["This page is limited for DataHub administrators"]</AeTypography>
@@ -75,17 +81,14 @@
     {
         var result = new List<(string, RenderFragment)>
         {
-            (Localizer["Project Requests"], @<ProjectAccessRequestTable UserId=@CurrentUserId IsDatahubAdmin=@IsDataHubAdmin/>),
-            (Localizer["Authorize Users"], @<ServiceAccessRequestTable UserId=@CurrentUserId IsDatahubAdmin=@IsDataHubAdmin/>),
-            (Localizer["Service Requests"], @<ServiceCreationRequestTable UserId=@CurrentUserId IsDatahubAdmin=@IsDataHubAdmin/>),
+            (Localizer["Project Requests"], @<ProjectAccessRequestTable/>),
+            (Localizer["Authorize Users"], @<ServiceAccessRequestTable/>),
+            (Localizer["Service Requests"], @<ServiceCreationRequestTable/>),
         };
 
         if (_user != null)
         {
-            result.Add((Localizer["Notification Test Panel"], @<NotificationTestPanel
-                                                                   DefaultEmailName="@CurrentUserName"
-                                                                   DefaultEmailAddress="@CurrentUserEmail"/>
-                ));
+            result.Add((Localizer["Notification Test Panel"], @<NotificationTestPanel DefaultEmailName="@CurrentUserName"/>));
         }
 
         if (IsDataHubAdmin)
