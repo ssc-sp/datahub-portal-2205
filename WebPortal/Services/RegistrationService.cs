@@ -6,6 +6,8 @@ namespace Datahub.Portal.Services;
 
 public class RegistrationService
 {
+    public static readonly string SELF_SIGNUP = "self-signup page";
+    
     private readonly IDbContextFactory<DatahubProjectDBContext> _dbFactory;
     private readonly ILogger<RegistrationService> _logger;
 
@@ -15,7 +17,7 @@ public class RegistrationService
         _logger = logger;
     }
     
-    public async Task SubmitRegistration(BasicIntakeForm basicIntakeForm)
+    public async Task SubmitRegistration(BasicIntakeForm basicIntakeForm, string createdBy)
     {
         await using var db = await _dbFactory.CreateDbContextAsync();
 
@@ -25,7 +27,7 @@ public class RegistrationService
         if (exists != null)
         {
             _logger.LogInformation("Registration request for {Email} already exists", basicIntakeForm.Email);
-            exists.UpdatedBy = "self-signup page (resubmitted)";
+            exists.UpdatedBy = createdBy;
             exists.ProjectName = basicIntakeForm.ProjectName;
             exists.DepartmentName = basicIntakeForm.DepartmentName;
             exists.UpdatedAt = DateTime.UtcNow;
@@ -40,7 +42,8 @@ public class RegistrationService
                 Email = basicIntakeForm.Email,
                 DepartmentName = basicIntakeForm.DepartmentName,
                 ProjectName = basicIntakeForm.ProjectName,
-                CreatedBy = "self-signup page",
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.Now,
             };
             await db.Registration_Requests.AddAsync(registrationRequest);
         }
