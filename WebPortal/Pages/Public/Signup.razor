@@ -79,7 +79,7 @@
 
     private async Task HandleValidSubmit()
     {
-        await _registrationService.SubmitRegistration(_basicIntakeForm);
+        await _registrationService.SubmitRegistration(_basicIntakeForm, RegistrationService.SELF_SIGNUP);
         _showThankYou = true;
     }
 
