@@ -9,7 +9,7 @@ sequenceDiagram
     participant F as Graph Function
 
     U->>+P: /register/new
-    P->>P: insert registration request (create)
+    P->>P: insert registration request (requested)
     P-->>U: notify pending
     P-->>A: notify pending
     deactivate P
