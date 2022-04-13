@@ -36,10 +36,10 @@ public class Datahub_Registration_Request
     [Timestamp]
     public byte[] RowVersion { get; set; }
     
-    public static readonly string STATUS_CREATE = "create";
-    public static readonly string STATUS_INVITE = "invite";
-    public static readonly string STATUS_PROVISIONED = "provisioned";
-    public static readonly string STATUS_LOGGED_IN = "logged in";
+    public const string STATUS_CREATE = "create";
+    public const string STATUS_INVITE = "invite";
+    public const string STATUS_PROVISIONED = "provisioned";
+    public const string STATUS_LOGGED_IN = "logged in";
     
     public Datahub_Registration_Request()
     {

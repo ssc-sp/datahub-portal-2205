@@ -98,4 +98,55 @@ public class RegistrationFlowTests
         Assert.Equal(intakeForm.DepartmentName, result.DepartmentName);
         Assert.Equal(intakeForm.ProjectName, result.ProjectName);
     }
+
+    [Fact]
+    public async Task RegistrationInvalidDoesNotExistTest()
+    {
+        await using var context = await _dbFactory.CreateDbContextAsync();
+
+        const string testName = "RegistrationInvalidDoesNotExistTest";
+        var request = new Datahub_Registration_Request
+        {
+            ProjectName = $"{testName} Project",
+            Email = $"{testName}@email.com",
+            DepartmentName = $"{testName} Department",
+            CreatedBy = RegistrationService.SELF_SIGNUP,
+            CreatedAt = DateTime.Now
+        };
+        
+        Assert.False(await context.Registration_Requests.AnyAsync(r => r.Email == request.Email));
+        Assert.False(await _registrationService.IsValidRegistrationRequest(request));
+    }
+
+    [Theory]
+    [InlineData("", "exists")]
+    [InlineData(" ", "exists")]
+    [InlineData(null, "exists")]
+    [InlineData("eXiSTs", "exists")]
+    public async Task RegistrationInvalidAcronymTest(string testAcronym, string existingAcronym)
+    {
+        await using var context = await _dbFactory.CreateDbContextAsync();
+        await context.AddAsync(new Datahub_Registration_Request
+        {
+            ProjectAcronym = existingAcronym
+        });
+        await context.SaveChangesAsync();
+
+        const string testName = "RegistrationInvalidAcronymTest";
+        var request = new Datahub_Registration_Request
+        {
+            ProjectName = $"{testName} Project",
+            Email = $"{testName}@email.com",
+            DepartmentName = $"{testName} Department",
+            CreatedBy = RegistrationService.SELF_SIGNUP,
+            CreatedAt = DateTime.Now,
+            ProjectAcronym = testAcronym,
+        };
+        
+        await context.Registration_Requests.AddAsync(request);
+        await context.SaveChangesAsync();
+        
+        Assert.True(await context.Registration_Requests.AnyAsync(r => r.Email == request.Email));
+        Assert.False(await _registrationService.IsValidRegistrationRequest(request));
+    }
 }
