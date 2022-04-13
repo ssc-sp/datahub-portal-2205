@@ -18,14 +18,15 @@ sequenceDiagram
     
     A->>-P: approve
     activate P
-    P->>P: provision project
+    P->>P: create project
+    P->>P: create storage request for project
     P->>+F: create user
     F->>U: email notification
     activate U
     F->>-P: notify success
 
     P->>P: set user as project admin
-    P->>P: update registration status (provisioned) 
+    P->>P: update registration status (created) 
     deactivate P
 
     U->>-P: login to portal
