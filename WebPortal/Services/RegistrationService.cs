@@ -16,6 +16,20 @@ public class RegistrationService
         _dbFactory = dbFactory;
         _logger = logger;
     }
+
+    public async Task<bool> IsValidRegistrationRequest(Datahub_Registration_Request registrationRequest)
+    {
+        await using var db = await _dbFactory.CreateDbContextAsync();
+
+        var exists = await db.Registration_Requests
+            .FirstOrDefaultAsync(r => r.Email == registrationRequest.Email);
+
+        if (exists == null || string.IsNullOrWhiteSpace(exists.ProjectAcronym))
+            return false;
+
+        return !await db.Projects.AnyAsync(p =>
+            p.Project_Acronym_CD.Equals(exists.ProjectAcronym, StringComparison.InvariantCultureIgnoreCase));
+    }
     
     public async Task SubmitRegistration(BasicIntakeForm basicIntakeForm, string createdBy)
     {

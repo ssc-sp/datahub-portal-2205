@@ -1,4 +1,5 @@
 ﻿@using Datahub.Portal.Pages.Admin.Requests
+@using Datahub.Portal.Pages.Admin.Requests.Registration
 
 @inject IUserInformationService _userInformationService
 @inject ServiceAuthManager _serviceAuthManager
@@ -84,7 +85,7 @@
             (Localizer["Project Requests"], @<ProjectAccessRequestTable/>),
             (Localizer["Authorize Users"], @<ServiceAccessRequestTable/>),
             (Localizer["Service Requests"], @<ServiceCreationRequestTable/>),
-            (Localizer["Registration Requests"], @<ViewRegistrationRequests />),
+            (Localizer["Registration Requests"], @<ViewRegistrationRequests/>),
         };
 
         if (_user != null)
