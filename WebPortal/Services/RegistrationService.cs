@@ -24,11 +24,23 @@ public class RegistrationService
         var exists = await db.Registration_Requests
             .FirstOrDefaultAsync(r => r.Email == registrationRequest.Email);
 
-        if (exists == null || string.IsNullOrWhiteSpace(exists.ProjectAcronym))
+        if (exists == null)
             return false;
 
+        var validAcronym = await IsValidUniqueProjectAcronym(exists.ProjectAcronym);
+
+        return validAcronym;
+    }
+
+    public async Task<bool> IsValidUniqueProjectAcronym(string projectAcronym)
+    {
+        if (string.IsNullOrWhiteSpace(projectAcronym))
+            return false;
+        
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        
         return !await db.Projects.AnyAsync(p =>
-            p.Project_Acronym_CD.Equals(exists.ProjectAcronym, StringComparison.InvariantCultureIgnoreCase));
+            p.Project_Acronym_CD.ToLower() == projectAcronym.ToLower());
     }
     
     public async Task SubmitRegistration(BasicIntakeForm basicIntakeForm, string createdBy)
