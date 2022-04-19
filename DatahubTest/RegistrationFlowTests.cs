@@ -68,6 +68,7 @@ public class RegistrationFlowTests
         Assert.Equal(intakeForm.ProjectName, result.ProjectName);
         Assert.NotNull(result.CreatedAt);
         Assert.Equal(RegistrationService.SELF_SIGNUP, result.CreatedBy);
+        Assert.Equal(Datahub_Registration_Request.STATUS_REQUESTED, result.Status);
         Assert.True(result.Id > 0, "Id should be set");
     }
     

@@ -36,9 +36,9 @@ public class Datahub_Registration_Request
     [Timestamp]
     public byte[] RowVersion { get; set; }
     
-    public const string STATUS_CREATE = "create";
-    public const string STATUS_INVITE = "invite";
-    public const string STATUS_PROVISIONED = "provisioned";
+    public const string STATUS_REQUESTED = "requested";
+    // public const string STATUS_INVITED = "invited";
+    public const string STATUS_APPROVED = "approved";
     public const string STATUS_LOGGED_IN = "logged in";
     
     public Datahub_Registration_Request()
@@ -46,6 +46,6 @@ public class Datahub_Registration_Request
         LinkId = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
-        Status = STATUS_CREATE;
+        Status = STATUS_REQUESTED;
     }
 }

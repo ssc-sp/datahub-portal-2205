@@ -6,8 +6,8 @@ namespace Datahub.Portal.Services;
 
 public class RegistrationService
 {
-    public static readonly string SELF_SIGNUP = "self-signup page";
-    
+    public const string SELF_SIGNUP = "self-signup page";
+
     private readonly IDbContextFactory<DatahubProjectDBContext> _dbFactory;
     private readonly ILogger<RegistrationService> _logger;
 
