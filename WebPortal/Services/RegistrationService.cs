@@ -11,6 +11,11 @@ public class RegistrationService
     private readonly IDbContextFactory<DatahubProjectDBContext> _dbFactory;
     private readonly ILogger<RegistrationService> _logger;
 
+    private readonly List<string> _blacklistedAcronyms = new()
+    {
+        "new",
+    };
+
     public RegistrationService(IDbContextFactory<DatahubProjectDBContext> dbFactory, ILogger<RegistrationService> logger)
     {
         _dbFactory = dbFactory;
@@ -34,7 +39,7 @@ public class RegistrationService
 
     public async Task<bool> IsValidUniqueProjectAcronym(string projectAcronym)
     {
-        if (string.IsNullOrWhiteSpace(projectAcronym))
+        if (string.IsNullOrWhiteSpace(projectAcronym) || _blacklistedAcronyms.Any(a => a.ToLower() == projectAcronym.ToLower()))
             return false;
         
         await using var db = await _dbFactory.CreateDbContextAsync();
