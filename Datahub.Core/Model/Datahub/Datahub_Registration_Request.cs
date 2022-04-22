@@ -37,9 +37,9 @@ public class Datahub_Registration_Request
     public byte[] RowVersion { get; set; }
     
     public const string STATUS_REQUESTED = "requested";
-    // public const string STATUS_INVITED = "invited";
-    public const string STATUS_APPROVED = "approved";
-    public const string STATUS_LOGGED_IN = "logged in";
+    public const string STATUS_CREATED = "created";
+    public const string STATUS_COMPLETED = "completed";
+    public const string STATUS_CONFIRMED = "confirmed";
     
     public Datahub_Registration_Request()
     {

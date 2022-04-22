@@ -27,11 +27,18 @@
             </AeButton>
         }
     }
-    else if (RegistrationRequest.Status == Datahub_Registration_Request.STATUS_APPROVED)
+    else if (RegistrationRequest.Status == Datahub_Registration_Request.STATUS_COMPLETED)
     {
         <AeTypography>
             <i class="fas fa-check"></i>
-            Approved
+            Completed
+        </AeTypography>
+    }
+    else if (RegistrationRequest.Status == Datahub_Registration_Request.STATUS_CONFIRMED)
+    {
+        <AeTypography>
+            <i class="fas fa-check"></i>
+            Confirmed
         </AeTypography>
     }
     else
@@ -41,6 +48,9 @@
 </div>
 
 @code {
+    
+    [CascadingParameter(Name = "UserId")]
+    public string UserId { get; set; }
 
     [Parameter]
     public Datahub_Registration_Request RegistrationRequest { get; set; }

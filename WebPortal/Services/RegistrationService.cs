@@ -7,6 +7,9 @@ namespace Datahub.Portal.Services;
 public class RegistrationService
 {
     public const string SELF_SIGNUP = "self-signup page";
+    private const string DEFAULT_DATABRICKS_URL = "https://adb-5415916054641848.8.azuredatabricks.net/";
+    private const string DEFAULT_PROJECT_STATUS = "Ongoing";
+
 
     private readonly IDbContextFactory<DatahubProjectDBContext> _dbFactory;
     private readonly ILogger<RegistrationService> _logger;
@@ -15,6 +18,7 @@ public class RegistrationService
     {
         "new",
     };
+
 
     public RegistrationService(IDbContextFactory<DatahubProjectDBContext> dbFactory, ILogger<RegistrationService> logger)
     {
@@ -79,6 +83,42 @@ public class RegistrationService
             await db.Registration_Requests.AddAsync(registrationRequest);
         }
 
+        await db.SaveChangesAsync();
+    }
+
+    public async Task CreateProject(Datahub_Registration_Request registrationRequest, string adminUserId)
+    {
+        if (!await IsValidRegistrationRequest(registrationRequest))
+            throw new InvalidOperationException("Invalid registration request");
+        
+        if(string.IsNullOrWhiteSpace(adminUserId))
+            throw new ArgumentNullException(nameof(adminUserId));
+        
+        
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        BasicIntakeForm.DepartmentDictionary.TryGetValue(registrationRequest.DepartmentName, out var mappedSectorName);
+
+        var project = new Datahub_Project()
+        {
+            Project_Acronym_CD = registrationRequest.ProjectAcronym,
+            Project_Name = registrationRequest.ProjectName,
+            Branch_Name = registrationRequest.DepartmentName,
+            Sector_Name = mappedSectorName ?? registrationRequest.DepartmentName,
+            Contact_List = registrationRequest.Email,
+            Project_Admin = registrationRequest.Email,
+            
+            Databricks_URL = DEFAULT_DATABRICKS_URL,
+            Project_Status_Desc = DEFAULT_PROJECT_STATUS,
+        };  
+        
+        await db.Projects.AddAsync(project);
+
+        registrationRequest.Status = Datahub_Registration_Request.STATUS_CREATED;
+        registrationRequest.UpdatedAt = DateTime.UtcNow;
+        registrationRequest.UpdatedBy = adminUserId;
+        
+        db.Entry(registrationRequest).State = EntityState.Modified;
+        
         await db.SaveChangesAsync();
     }
 }

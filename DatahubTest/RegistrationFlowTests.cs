@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Datahub.Core.EFCore;
 using Datahub.Portal.Data.Forms;
@@ -149,5 +150,97 @@ public class RegistrationFlowTests
         
         Assert.True(await context.Registration_Requests.AnyAsync(r => r.Email == request.Email));
         Assert.False(await _registrationService.IsValidRegistrationRequest(request));
+    }
+
+    [Fact]
+    public async Task RegistrationCreateProjectTest()
+    {
+        await using var context = await _dbFactory.CreateDbContextAsync();
+
+        const string testName = "RegistrationCreateProjectTest";
+        var request = new Datahub_Registration_Request
+        {
+            ProjectName = $"{testName} Project",
+            Email = $"{testName}@email.com",
+            DepartmentName = $"{testName} Department",
+            CreatedBy = RegistrationService.SELF_SIGNUP,
+            CreatedAt = DateTime.Now,
+            ProjectAcronym = "RegistrationCreateProjectTest"
+        };
+        
+        await context.Registration_Requests.AddAsync(request);
+        await context.SaveChangesAsync();
+
+        await _registrationService.CreateProject(request, testName);
+        var requestResult = await context.Registration_Requests
+            .FirstOrDefaultAsync(r => r.Email == request.Email);
+        
+        var projectResult = await context.Projects
+            .FirstOrDefaultAsync(r => r.Project_Name == request.ProjectName);
+        Assert.NotNull(projectResult);
+        Assert.NotNull(requestResult);
+
+        Assert.Equal(requestResult.ProjectName, projectResult.Project_Name);
+        Assert.Equal(requestResult.Email, projectResult.Contact_List);
+        Assert.Equal(requestResult.DepartmentName, projectResult.Branch_Name);
+        
+        Assert.Equal(testName, requestResult.UpdatedBy);
+        Assert.True(requestResult.UpdatedAt > DateTime.Now.AddMinutes(-5));
+        Assert.Equal(Datahub_Registration_Request.STATUS_CREATED, requestResult.Status);
+
+        BasicIntakeForm.DepartmentDictionary.TryGetValue(request.DepartmentName, out var sectorName);
+        
+        Assert.Equal(sectorName ?? requestResult.DepartmentName, projectResult.Sector_Name);
+    }
+    
+    [Fact]
+    public async Task RegistrationCreateProjectInvalidTest()
+    {
+        await using var context = await _dbFactory.CreateDbContextAsync();
+
+        const string testName = "RegistrationCreateProjectInvalidTest";
+        var request = new Datahub_Registration_Request
+        {
+            ProjectName = $"{testName} Project",
+            Email = $"{testName}@email.com",
+            DepartmentName = $"{testName} Department",
+            CreatedBy = RegistrationService.SELF_SIGNUP,
+            CreatedAt = DateTime.Now,
+        };
+        
+        await context.Registration_Requests.AddAsync(request);
+        await context.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await _registrationService.CreateProject(request, testName);
+        });
+    }
+
+    [Fact]
+    public async Task RegistrationCreateProjectSectorNameTest()
+    {
+        await using var context = await _dbFactory.CreateDbContextAsync();
+
+        const string testName = "RegistrationCreateProjectSectorNameTest";
+        var (department, sector) = BasicIntakeForm.DepartmentDictionary.First();
+        var request = new Datahub_Registration_Request
+        {
+            ProjectName = $"{testName} Project",
+            Email = $"{testName}@email.com",
+            DepartmentName = department,
+            CreatedBy = RegistrationService.SELF_SIGNUP,
+            CreatedAt = DateTime.Now,
+            ProjectAcronym = "RegistrationCreateProjectSectorNameTest"
+        };
+        
+        await context.Registration_Requests.AddAsync(request);
+        await context.SaveChangesAsync();
+        await _registrationService.CreateProject(request, testName);
+        
+        var projectResult = await context.Projects
+            .FirstOrDefaultAsync(r => r.Project_Name == request.ProjectName);
+        Assert.NotNull(projectResult);
+        Assert.Equal(sector, projectResult.Sector_Name);
     }
 }
